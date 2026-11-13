@@ -40,6 +40,17 @@ def main() -> int:
         print(f"copy mismatch: source {data_size} bytes, wrote {copied}", file=sys.stderr)
         return 1
 
+    # The judge tells PNG from JPEG by the first bytes, so make sure the
+    # copy really starts with one of those two signatures before we
+    # report success.
+    with open(dest, "rb") as fh:
+        head = fh.read(8)
+    is_jpeg = head[:3] == b"\xff\xd8\xff"
+    is_png = head == b"\x89PNG\r\n\x1a\n"
+    if not (is_jpeg or is_png):
+        print("copied file is neither JPEG nor PNG", file=sys.stderr)
+        return 1
+
     print(f"wrote {dest} ({copied} bytes)")
     return 0
 
